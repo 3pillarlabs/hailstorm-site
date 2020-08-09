@@ -4,17 +4,19 @@ This the test application for integration testing of Hailstorm application compo
 
 ## AWS Build
 
-Copy ``setup/hailstorm-site/vagrant-site-sample.yml`` to ``setup/hailstorm-site/vagrant-site.yml`` and edit the
-properties.
+**Copy ``setup/hailstorm-site/vagrant-site-sample.yml`` to ``setup/hailstorm-site/vagrant-site.yml`` and edit the
+properties.**
+
+**Install the [Vagrant AWS Plugin](https://github.com/mitchellh/vagrant-aws).**
 
 ```bash
-➜  hailstorm-sdk$ vagrant up aws-site
+➜  hailstorm-site$ vagrant up aws-site --provider=aws
 ```
 
-## Docker Build
+## Local DataCenter on Vagrant
 
 ```bash
-➜  hailstorm-sdk$ docker-compose -f docker-compose-cli.yml -f docker-compose-cli.ci.yml -f docker-compose.dc-sim.yml up -d
+➜  hailstorm-site$ vagrant up /data-center/
 ```
-In addition to the Hailstorm database, this will bring up 3 containers - one container acts as the target system and
-two as load generating agents.
+
+This will bring up 3 local VMs - one VM acts as the target system and two as load generating agents.
