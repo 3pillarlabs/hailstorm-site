@@ -78,10 +78,10 @@ Vagrant.configure(2) do |config|
     site.vm.synced_folder ".", "/vagrant", type: "rsync", rsync__exclude: [".git/", ".gitignore/", "log/", "tmp/", "build/"]
 
     site.vm.provider :aws do |ec2, override|
-      ec2.ami = "ami-0f9cf087c1f27d9b1"
       ec2.access_key_id, ec2.secret_access_key = aws_keys
       require 'yaml'
-      aws_conf = YAML.load_file('setup/hailstorm-site/vagrant-site.yml').reduce({}) { |a, e| a.merge(e[0].to_sym => e[1]) }
+      aws_conf = YAML.load_file('setup/vagrant-aws.yml').reduce({}) { |a, e| a.merge(e[0].to_sym => e[1]) }
+      ec2.ami = aws_conf[:ami]
       ec2.keypair_name = aws_conf[:keypair_name]
       ec2.instance_type = aws_conf[:instance_type] || "t2.medium"
       ec2.elastic_ip = true
@@ -93,8 +93,9 @@ Vagrant.configure(2) do |config|
       }
 
       ec2.terminate_on_shutdown = false
-
       ec2.block_device_mapping = [{"DeviceName" => "/dev/sda1", "Ebs.VolumeSize" => 80}]
+      ec2.elastic_ip = false
+      ec2.associate_public_ip = true
 
       override.ssh.username = "ubuntu"
       override.ssh.private_key_path = aws_conf[:private_key_path]

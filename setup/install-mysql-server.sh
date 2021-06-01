@@ -7,5 +7,5 @@ if [ $? -ne 0 ]; then
 	sudo debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password root'
 	sudo apt-get update
 	sudo apt-get install -y mysql-server
-	mysql -uroot -proot <<< "SET PASSWORD FOR 'root'@'localhost' = PASSWORD('');"
+	sudo mysqladmin --user=root --password=root password ''
 fi
