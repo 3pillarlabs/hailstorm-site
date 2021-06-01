@@ -4,7 +4,7 @@ This the test application for integration testing of Hailstorm application compo
 
 ## AWS Build
 
-**Copy ``setup/hailstorm-site/vagrant-site-sample.yml`` to ``setup/hailstorm-site/vagrant-site.yml`` and edit the
+**Copy ``setup/vagrant-aws-sample.yml`` to ``setup/vagrant-aws.yml`` and edit the
 properties.**
 
 **Install the [Vagrant AWS Plugin](https://github.com/mitchellh/vagrant-aws).**

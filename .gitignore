@@ -26,7 +26,6 @@
 
 .ruby-version
 setup/vagrant-aws.yml
-setup/hailstorm-site/vagrant-site.yml
 *.pem
 *.log
 .vagrant/

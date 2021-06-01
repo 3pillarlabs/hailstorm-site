@@ -5,7 +5,7 @@
 sudo -i
 
 # mysql2 gem dependencies
-apt-get install -y libmysqlclient-dev
+apt-get install -y default-libmysqlclient-dev
 
 # nodejs
 apt-get install -y nodejs
@@ -21,9 +21,9 @@ cd $install_path
 rvm use $ruby_version
 
 # install bundler if not present
-which bundle
-if [ $? -ne 0 ]; then
-	gem install bundler --no-rdoc --no-ri
+bundled_with=$(grep -A1 'BUNDLED WITH' $hailstorm_site_home/Gemfile.lock | grep -v 'BUNDLED WITH' | sed -E 's/\s+//')
+if [ -z "$(gem list -q bundler:$bundled_with)" ]; then
+	gem install bundler:$bundled_with -N
 fi
 
 # install hailstorm-site & dependencies
@@ -32,7 +32,8 @@ bundle install
 echo $ruby_version > .ruby-version
 mysql -uroot hailstorm_site_production -e 'select id from products limit 1' > /dev/null 2>&1
 if [ $? -ne 0 ]; then
-	mysql -uroot <<< 'grant all privileges on *.* to "hailstorm"@"localhost" identified by "hailstorm"'
+  mysql -uroot <<< 'CREATE USER "hailstorm"@"localhost" IDENTIFIED BY "hailstorm"'
+	mysql -uroot <<< 'GRANT ALL ON *.* TO "hailstorm"@"localhost"'
 	RAILS_ENV=production rake db:setup
 else
 	RAILS_ENV=production rake db:migrate

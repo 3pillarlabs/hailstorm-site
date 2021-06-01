@@ -18,3 +18,6 @@
 
   # Path to private_key_path corresponding to keypair_name
   private_key_path: ""
+
+  # AMI to provision
+  ami: "ami-0c1a7f89451184c8b"
