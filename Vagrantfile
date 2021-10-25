@@ -1,5 +1,16 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+class Hash
+  def slice(*keep_keys)
+    h = {}
+    keep_keys.each { |key| h[key] = fetch(key) if has_key?(key) }
+    h
+  end unless Hash.method_defined?(:slice)
+
+  def except(*less_keys)
+    slice(*keys - less_keys)
+  end unless Hash.method_defined?(:except)
+end
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -36,14 +47,15 @@ Vagrant.configure(2) do |config|
       fi
     SHELL
 
-    # rvm
-    site_config.vm.provision "rvm", :type => :shell, :path => 'setup/ruby/install-rvm.sh', :args => 'stable'
-
     # git
     site_config.vm.provision "git", :type => :shell, :inline => 'sudo apt-get install -y git'
 
     # ruby-mri
-    site_config.vm.provision "mri", :type => :shell, :path => 'setup/ruby/install-ruby-mri.sh'
+    site_config.vm.provision "ruby", :type => :shell, :inline => 'sudo apt-get install -y ruby ruby-dev libxml2 build-essential'
+
+  	# hailstorm-site
+  	site_config.vm.provision "hailstorm_site", :type => :shell, :path => 'setup/hailstorm-site/install-hailstorm-site.sh'
+    site_config.vm.provision "hailstorm_service", :type => :shell, :inline => 'sudo systemctl start hailstorm-site.service', run: :always
   end
 
   def aws_keys
@@ -66,7 +78,8 @@ Vagrant.configure(2) do |config|
             end
         }
       end
-      profile = keys.fetch(ENV['AWS_PROFILE'] || 'default')
+      profile_name = ENV['AWS_PROFILE'] || 'default'
+      profile = keys.key?(profile_name) ? keys.fetch(profile_name) : {}
       [profile['aws_access_key_id'], profile['aws_secret_access_key']]
     else
       raise "#{credentials_file_path} not found"
@@ -84,7 +97,6 @@ Vagrant.configure(2) do |config|
       ec2.ami = aws_conf[:ami]
       ec2.keypair_name = aws_conf[:keypair_name]
       ec2.instance_type = aws_conf[:instance_type] || "t2.medium"
-      ec2.elastic_ip = true
       ec2.region = aws_conf[:region] || "us-east-1"
       ec2.security_groups = aws_conf[:security_groups]
       ec2.subnet_id = aws_conf[:subnet_id] if aws_conf.key?(:subnet_id)
@@ -93,7 +105,7 @@ Vagrant.configure(2) do |config|
       }
 
       ec2.terminate_on_shutdown = false
-      ec2.block_device_mapping = [{"DeviceName" => "/dev/sda1", "Ebs.VolumeSize" => 80}]
+      ec2.block_device_mapping = [{"DeviceName" => "/dev/sda1", "Ebs.VolumeSize" => 8}]
       ec2.elastic_ip = false
       ec2.associate_public_ip = true
 
@@ -102,12 +114,11 @@ Vagrant.configure(2) do |config|
     end
 
     provision_site(site)
-  	# hailstorm-site
-  	site.vm.provision "hailstorm_site", :type => :shell, :path => 'setup/hailstorm-site/install-hailstorm-site.sh', :run => 'always'
+  	site.vm.provision "reset_site_ownership", :type => :shell, :inline => 'sudo chmod -R 777 /vagrant/tmp', run: :always
   end
 
 	config.vm.define "data-center-site", autostart: false do |site_local|
-		site_local.vm.box = "ubuntu/xenial64"
+		site_local.vm.box = "ubuntu/focal64"
 		site_local.vm.provider "virtualbox" do |vb|
 		#   Display the VirtualBox GUI when booting the machine
 		#   vb.gui = true
@@ -120,13 +131,11 @@ Vagrant.configure(2) do |config|
 
     site_local.vm.network "private_network", ip: "192.168.20.100"
     provision_site(site_local)
-  	# hailstorm-site
-  	site_local.vm.provision "hailstorm_site", :type => :shell, :path => 'setup/hailstorm-site/install-hailstorm-site.sh', :run => 'always'
   end
 
   (1..2).each do |serial|
     config.vm.define "data-center-agent-#{serial}", autostart: false do |hsdc|
-      hsdc.vm.box = 'ubuntu/trusty64'
+      hsdc.vm.box = 'ubuntu/focal64'
       hsdc.vm.provider 'virtualbox' do |vb|
         vb.memory = 2048
       end

@@ -13,10 +13,21 @@ properties.**
 ➜  hailstorm-site$ vagrant up aws-site --provider=aws
 ```
 
-## Local DataCenter on Vagrant
+## Local DataCenter
 
 ```bash
 ➜  hailstorm-site$ vagrant up /data-center/
 ```
 
-This will bring up 3 local VMs - one VM acts as the target system and two as load generating agents.
+This will bring up 3 local VMs - one VM acts as the target system and two as load generating agents. The IP addresses
+are:
+
+- Site: 192.168.20.100
+- Agent 1: 192.168.20.10
+- Agent 2: 192.168.20.20
+
+## Local Site
+
+```bash
+➜  hailstorm-site$ vagrant up data-center-site
+```
