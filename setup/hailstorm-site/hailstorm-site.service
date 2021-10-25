@@ -14,14 +14,12 @@ Restart=on-failure
 RestartSec=3
 TimeoutStartSec=30
 WorkingDirectory=/vagrant
-ExecStart=/bin/bash -c 'source /usr/local/rvm/scripts/rvm && \
-	                      export SECRET_KEY_BASE=`rails secret` && \
-                        puma -C /vagrant/config/puma/production.rb -e production \
+ExecStart=/bin/bash -c 'export SECRET_KEY_BASE=`/usr/local/bin/rails secret` && \
+                        /usr/local/bin/puma -C /vagrant/config/puma/production.rb -e production \
                         --dir /vagrant --control tcp://127.0.0.1:8899 --control-token=site'
 
-ExecStop=/bin/bash -c 'source /usr/local/rvm/scripts/rvm && \
-                       cd /vagrant && \
-                       pumactl -C tcp://127.0.0.1:8899 -T site halt'
+ExecStop=/bin/bash -c 'cd /vagrant && \
+                       /usr/local/bin/pumactl -C tcp://127.0.0.1:8899 -T site halt'
 
 [Install]
 WantedBy=multi-user.target

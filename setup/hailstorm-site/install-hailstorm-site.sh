@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# install hailstorm-site to ruby-2.4.1@hailstorm
+# install hailstorm-site to system ruby
 
 sudo -i
 
@@ -10,15 +10,11 @@ apt-get install -y default-libmysqlclient-dev
 # nodejs
 apt-get install -y nodejs
 
-ruby_version='ruby-2.4.1@hailstorm'
 install_path=/vagrant
 hailstorm_site_home=$install_path
 vagrant_user=vagrant
-rvm_script_path=/usr/local/rvm/scripts/rvm
 
-source $rvm_script_path
 cd $install_path
-rvm use $ruby_version
 
 # install bundler if not present
 bundled_with=$(grep -A1 'BUNDLED WITH' $hailstorm_site_home/Gemfile.lock | grep -v 'BUNDLED WITH' | sed -E 's/\s+//')
@@ -29,7 +25,6 @@ fi
 # install hailstorm-site & dependencies
 cd $hailstorm_site_home
 bundle install
-echo $ruby_version > .ruby-version
 mysql -uroot hailstorm_site_production -e 'select id from products limit 1' > /dev/null 2>&1
 if [ $? -ne 0 ]; then
   mysql -uroot <<< 'CREATE USER "hailstorm"@"localhost" IDENTIFIED BY "hailstorm"'
@@ -38,6 +33,7 @@ if [ $? -ne 0 ]; then
 else
 	RAILS_ENV=production rake db:migrate
 fi
+
 mkdir -p tmp/cache tmp/pids tmp/sessions tmp/sockets log
 chown -R $vagrant_user:$vagrant_user $hailstorm_site_home
 mkdir -p /usr/local/lib/hailstorm-site/tmp/sockets && chmod 770 /usr/local/lib/hailstorm-site/tmp/sockets
